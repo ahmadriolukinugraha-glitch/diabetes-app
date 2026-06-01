@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import axios from 'axios'
 import ResultCard from './components/ResultCard'
+import FeatureContributions from './components/FeatureContributions';
+import { RECS } from './data/recommendations';
 
 const FIELDS = [
   { key: 'glucose',           label: 'Kadar Glukosa',      unit: 'mg/dL',        default: 120 },
@@ -82,8 +84,52 @@ export default function App() {
           </div>
         )}
 
-        {/* Komponen Hasil */}
-        {result && <ResultCard result={result} />}
+        
+        {/* Tampilkan grafik hanya jika data hasil dari backend sudah berhasil diterima */}
+        {result && (
+          <div className="mt-6 space-y-6">
+            {/* Kartu Hasil Medis Anda yang sudah ada */}
+
+            {/* Panggil komponen grafik kontribusi dengan melempar dataimportance */}
+            <FeatureContributions importance={result.importance} />
+          </div>
+        )}
+
+        {/* Tampilkan rekomendasi jika data hasil prediksi sudah ada */}
+        {result && RECS[result.risk_level] && (
+          <div className="mt-6 p-6 bg-slate-800 rounded-xl border border-slate-700/50 text-white">
+            <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
+              📋 Rencana Aksi & Rekomendasi Kesehatan
+            </h3>
+            <p className="text-sm text-slate-400 mb-6 italic">
+              "{RECS[result.risk_level].summary}"
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {RECS[result.risk_level].categories.map((category, idx) => (
+                <div key={idx} className="p-4 bg-slate-900/40 rounded-xl border border-slate-700/30">
+                  <h4 
+                    className="font-bold text-md mb-4 pb-1 border-b"
+                    style={{ borderColor: category.color, color: category.color }}
+                  >
+                    {category.cat}
+                  </h4>
+                  <ul className="space-y-4">
+                    {category.items.map((item, itemIdx) => (
+                      <li key={itemIdx} className="flex gap-3 items-start text-sm">
+                        <span className="text-xl">{item.icon}</span>
+                        <div>
+                          <h5 className="font-semibold text-slate-200">{item.title}</h5>
+                          <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{item.desc}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
